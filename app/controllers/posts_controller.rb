@@ -1,4 +1,7 @@
 class PostsController < ApplicationController
+  before_filter :set_post, only: [:show, :edit, :update, :destroy]
+  before_filter :authenticate, except: [:index, :show]
+
   # GET /posts
   # GET /posts.json
   def index
@@ -13,8 +16,6 @@ class PostsController < ApplicationController
   # GET /posts/1
   # GET /posts/1.json
   def show
-    @post = Post.find(params[:id])
-
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @post }
@@ -34,7 +35,6 @@ class PostsController < ApplicationController
 
   # GET /posts/1/edit
   def edit
-    @post = Post.find(params[:id])
   end
 
   # POST /posts
@@ -56,7 +56,6 @@ class PostsController < ApplicationController
   # PUT /posts/1
   # PUT /posts/1.json
   def update
-    @post = Post.find(params[:id])
 
     respond_to do |format|
       if @post.update_attributes(params[:post])
@@ -72,7 +71,6 @@ class PostsController < ApplicationController
   # DELETE /posts/1
   # DELETE /posts/1.json
   def destroy
-    @post = Post.find(params[:id])
     @post.destroy
 
     respond_to do |format|
@@ -80,4 +78,21 @@ class PostsController < ApplicationController
       format.json { head :no_content }
     end
   end
+  
+  private
+    # Use callbacks to share common setup or constraints between actions.
+	def set_post
+	  @post = Post.find(params[:id])
+	end
+	
+	# Never trust paramters from the scary internet, only allow the white list through.
+	def post_params
+	  params.require(:post).permit(:title, :body)
+	end
+	
+	def authenticate
+	  authenticate_or_request_with_http_basic do |name, password|
+	    name == "admin" && password == "secret"
+	  end
+	end
 end
